@@ -1,1 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Ticket Médio</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        #grafico {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calculadora de Ticket Médio</h1>
+    <form id="calcForm">
+        <label for="ano">Ano:</label>
+        <input type="number" id="ano" name="ano" required>
+        <label for="meses">Número de meses:</label>
+        <input type="number" id="meses" name="meses" required>
+        
+        <div id="inputsMeses"></div>
+
+        <label for="clientes">Número de clientes:</label>
+        <input type="number" id="clientes" name="clientes" required>
+        <input type="submit" value="Calcular">
+    </form>
+
+    <div id="resultado" style="display: none;">
+        <h2>Resultado:</h2>
+        <p>O ticket médio é: <span id="ticketMedio"></span></p>
+    </div>
+
+    <div id="grafico"></div>
+
+    <script>
+        document.getElementById('calcForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            var meses = parseInt(document.getElementById('meses').value);
+            var faturamentos = [];
+
+            for (var i = 1; i <= meses; i++) {
+                var inputId = 'faturamento_' + i;
+                var faturamento = parseFloat(document.getElementById(inputId).value);
+                faturamentos.push(faturamento);
+            }
+
+            var clientes = parseInt(document.getElementById('clientes').value);
+            var faturamentoTotal = faturamentos.reduce((total, valor) => total + valor, 0);
+            var ticketMedio = faturamentoTotal / meses / clientes;
+
+            document.getElementById('resultado').style.display = 'block';
+            document.getElementById('ticketMedio').innerText = 'R$ ' + ticketMedio.toFixed(2);
+
+            atualizarGrafico(faturamentos);
+        });
+
+        function criarInputsMeses(numMeses) {
+            var inputsMeses = document.getElementById('inputsMeses');
+            inputsMeses.innerHTML = '';
+
+            for (var i = 1; i <= numMeses; i++) {
+                var inputId = 'faturamento_' + i;
+                var label = document.createElement('label');
+                label.setAttribute('for', inputId);
+                label.textContent = 'Faturamento mês ' + i + ':';
+                var input = document.createElement('input');
+                input.setAttribute('type', 'number');
+                input.setAttribute('id', inputId);
+                input.setAttribute('name', inputId);
+                input.setAttribute('required', 'true');
+                inputsMeses.appendChild(label);
+                inputsMeses.appendChild(input);
+            }
+        }
+
+        document.getElementById('meses').addEventListener('change', function() {
+            var numMeses = parseInt(this.value);
+            criarInputsMeses(numMeses);
+        });
+
+        function atualizarGrafico(faturamentos) {
+            var meses = [];
+            for (var i = 1; i <= faturamentos.length; i++) {
+                meses.push('Mês ' + i);
+            }
+
+            var trace = {
+                x: meses,
+                y: faturamentos,
+                type: 'scatter',
+                mode: 'lines+markers',
+                marker: {color: 'blue'},
+                line: {shape: 'spline'}
+            };
+            
+            var data = [trace];
+
+            var layout = {
+                title: 'Faturamento por Mês',
+                xaxis: {
+                    title: 'Mês'
+                },
+                yaxis: {
+                    title: 'Faturamento'
+                }
+            };
+
+            Plotly.newPlot('grafico', data, layout);
+        }
+    </script>
+</body>
+</html>
+
+
 
